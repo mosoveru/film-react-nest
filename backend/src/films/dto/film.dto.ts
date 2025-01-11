@@ -1,3 +1,5 @@
+import { ScheduleDto } from './schedule.dto';
+
 export class FilmDto {
   id: string;
   rating: number;
@@ -8,4 +10,5 @@ export class FilmDto {
   description: string;
   image: string;
   cover: string;
+  schedule: ScheduleDto[];
 }
