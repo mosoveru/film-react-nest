@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { FilmsRepository } from '../types';
 
 @Injectable()
-export class MemoryRepository implements FilmsRepository {
+export class FilmsMemoryRepository implements FilmsRepository {
   films: FilmDto[] = [];
 
   save(film: Omit<FilmDto, 'id'>) {

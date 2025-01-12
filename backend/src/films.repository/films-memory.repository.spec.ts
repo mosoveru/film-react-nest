@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MemoryRepository } from './films-memory.repository';
+import { FilmsMemoryRepository } from './films-memory.repository';
 
 describe('FilmsRepository', () => {
-  let provider: MemoryRepository;
+  let provider: FilmsMemoryRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MemoryRepository],
+      providers: [FilmsMemoryRepository],
     }).compile();
 
-    provider = module.get<MemoryRepository>(MemoryRepository);
+    provider = module.get<FilmsMemoryRepository>(FilmsMemoryRepository);
   });
 
   it('should be defined', () => {

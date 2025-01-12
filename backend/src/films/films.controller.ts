@@ -7,8 +7,8 @@ export class FilmsController {
   constructor(private readonly filmsService: FilmsService) {}
 
   @Get()
-  findAvailableFilms() {
-    const films = this.filmsService.findAll();
+  async findAvailableFilms() {
+    const films = await this.filmsService.findAll();
     return {
       total: films.length,
       items: films,
@@ -19,7 +19,7 @@ export class FilmsController {
   findActualSchedule(@Param('id') id: string) {}
 
   @Post()
-  create(@Body() film: Omit<FilmDto, 'id'>) {
+  async create(@Body() film: Omit<FilmDto, 'id'>) {
     return this.filmsService.save(film);
   }
 }

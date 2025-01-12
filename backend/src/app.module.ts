@@ -1,36 +1,30 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { AppConfig, configProvider } from './app.config.provider';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { FilmsController } from './films/films.controller';
 import { OrderController } from './order/order.controller';
 import { FilmsService } from './films/films.service';
 import { OrderService } from './order/order.service';
-import { MemoryRepository } from './films.repository/films-memory.repository';
-import { REPOSITORY_TOKEN } from './constants';
+import { MongooseModule } from '@nestjs/mongoose';
+import { RepositoryModule } from './repository/repository.module';
+import configuration from './config/configuration';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
+      load: [configuration],
     }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('database.url'),
+      }),
+      inject: [ConfigService],
+    }),
+    RepositoryModule,
   ],
   controllers: [FilmsController, OrderController],
-  providers: [
-    configProvider,
-    FilmsService,
-    OrderService,
-    {
-      provide: REPOSITORY_TOKEN,
-      useFactory: (configService: AppConfig) => {
-        const driver = configService.database.driver;
-        console.log(driver);
-        if (driver === 'memory') {
-          return new MemoryRepository();
-        }
-      },
-      inject: ['CONFIG'],
-    },
-  ],
+  providers: [FilmsService, OrderService],
 })
 export class AppModule {}

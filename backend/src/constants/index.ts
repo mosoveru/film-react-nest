@@ -1,1 +1,3 @@
-export const REPOSITORY_TOKEN = 'REPOSITORY';
+export enum TOKENS {
+  REPOSITORY = `REPOSITORY`,
+}
