@@ -1,6 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { FilmsRepository } from '../types';
-import { FilmDto } from './dto/film.dto';
 import { TOKENS } from '../constants';
 
 @Injectable()
@@ -9,11 +8,11 @@ export class FilmsService {
     @Inject(TOKENS.REPOSITORY) private readonly repository: FilmsRepository,
   ) {}
 
-  findAll() {
-    return this.repository.findAll();
+  findByUUID(id: string) {
+    return this.repository.findByUUID(id);
   }
 
-  save(film: Omit<FilmDto, 'id'>) {
-    return this.repository.save(film);
+  findAll() {
+    return this.repository.findAll();
   }
 }

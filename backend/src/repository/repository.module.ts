@@ -4,7 +4,6 @@ import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Film, FilmSchema } from '../films/schemas/films.schema';
 import { TOKENS } from '../constants';
 import { Model } from 'mongoose';
-import { FilmsMemoryRepository } from '../films.repository/films-memory.repository';
 import { FilmsMongoRepository } from '../films.repository/films-mongo.repository';
 
 @Module({
@@ -17,10 +16,7 @@ import { FilmsMongoRepository } from '../films.repository/films-mongo.repository
       provide: TOKENS.REPOSITORY,
       useFactory: (configService: ConfigService, filmsModel: Model<Film>) => {
         const driver = configService.get<string>('database.driver');
-        console.log(driver);
-        if (driver === 'memory') {
-          return new FilmsMemoryRepository();
-        }
+
         if (driver === 'mongodb') {
           return new FilmsMongoRepository(filmsModel);
         }

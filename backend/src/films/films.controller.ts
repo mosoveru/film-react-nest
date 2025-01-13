@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { FilmDto } from './dto/film.dto';
+import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 import { FilmsService } from './films.service';
 
 @Controller('films')
@@ -16,10 +15,14 @@ export class FilmsController {
   }
 
   @Get(':id/schedule')
-  findActualSchedule(@Param('id') id: string) {}
-
-  @Post()
-  async create(@Body() film: Omit<FilmDto, 'id'>) {
-    return this.filmsService.save(film);
+  async findActualSchedule(@Param('id') id: string) {
+    const film = await this.filmsService.findByUUID(id);
+    if (!film) {
+      throw new NotFoundException('No film found.');
+    }
+    return {
+      total: film.schedule.length,
+      items: film.schedule,
+    };
   }
 }
