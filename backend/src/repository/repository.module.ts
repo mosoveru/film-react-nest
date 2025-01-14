@@ -4,7 +4,7 @@ import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Film, FilmSchema } from '../films/schemas/films.schema';
 import { TOKENS } from '../constants';
 import { Model } from 'mongoose';
-import { FilmsMongoRepository } from '../films.repository/films-mongo.repository';
+import { FilmsMongoRepository } from '../films/repository/films-mongo.repository';
 
 @Module({
   imports: [

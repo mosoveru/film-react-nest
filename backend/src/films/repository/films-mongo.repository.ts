@@ -1,6 +1,6 @@
-import { FilmsRepository } from '../types';
+import { FilmsRepository } from '../../types';
 import { ClientSession, ClientSessionOptions, Model } from 'mongoose';
-import { Film } from '../films/schemas/films.schema';
+import { Film } from '../schemas/films.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
 
