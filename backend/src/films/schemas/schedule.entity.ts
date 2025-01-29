@@ -1,29 +1,45 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Film } from './films.entity';
+import { Films } from './films.entity';
 
 @Entity()
-export class Schedule {
-  @PrimaryGeneratedColumn()
+export class Schedules {
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   daytime: string;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   hall: number;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   rows: number;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   seats: number;
 
-  @Column()
+  @Column({
+    type: 'double precision',
+    nullable: false,
+  })
   price: number;
 
-  @Column()
+  @Column({
+    type: 'text',
+    nullable: false,
+  })
   taken: string;
 
-  @ManyToOne(() => Film, (film) => film.id)
-  filmId: Film;
+  @ManyToOne(() => Films, (film) => film.schedules, {
+    nullable: false,
+  })
+  film: Films;
 }

@@ -34,7 +34,6 @@ export class FilmsMongoRepository implements FilmsRepository {
     scheduleId: string;
     seat: string;
   }) {
-    console.log('updateOneSeat');
     return this.mongodb.updateOne(
       {
         id: data.filmId,

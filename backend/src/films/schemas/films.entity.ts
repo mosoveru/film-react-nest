@@ -1,35 +1,53 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Schedule } from './schedule.entity';
+import { Schedules } from './schedule.entity';
 
 @Entity()
-export class Film {
-  @PrimaryGeneratedColumn()
+export class Films {
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({
+    type: 'double precision',
+    nullable: false,
+  })
   rating: number;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   director: string;
 
-  @Column()
+  @Column({
+    type: 'text',
+    nullable: false,
+  })
   tags: string;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   image: string;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   cover: string;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   title: string;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   about: string;
 
-  @Column()
+  @Column({
+    nullable: false,
+  })
   description: string;
 
-  @OneToMany(() => Schedule, (schedule) => schedule.id)
-  schedule: Schedule[];
+  @OneToMany(() => Schedules, (schedule) => schedule.film)
+  schedules: Schedules[];
 }
