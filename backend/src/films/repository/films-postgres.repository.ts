@@ -10,15 +10,14 @@ import { Schedules } from '../schemas/schedule.entity';
 @Injectable()
 export class FilmsPostgresRepository implements FilmsRepository {
   constructor(
-    @InjectRepository(Films) private readonly postgres: Repository<Films>,
+    @InjectRepository(Films) private readonly filmsTable: Repository<Films>,
     @InjectRepository(Schedules)
-    private readonly postgresSchedule: Repository<Schedules>,
+    private readonly schedulesTable: Repository<Schedules>,
     private readonly dataSource: DataSource,
   ) {}
 
   async findAll() {
-    console.log(this.postgres);
-    const films = await this.postgres.find({
+    const films = await this.filmsTable.find({
       where: {},
       relations: {
         schedules: true,
@@ -29,7 +28,7 @@ export class FilmsPostgresRepository implements FilmsRepository {
   }
 
   async findByUUID(id: string) {
-    const film = await this.postgres.findOne({
+    const film = await this.filmsTable.findOne({
       where: {
         id,
       },
@@ -41,7 +40,7 @@ export class FilmsPostgresRepository implements FilmsRepository {
   }
 
   async findFilmWithScheduleByUUID(filmId: string, scheduleId: string) {
-    const film = await this.postgres.findOne({
+    const film = await this.filmsTable.findOne({
       where: {
         id: filmId,
         schedules: {
@@ -60,14 +59,14 @@ export class FilmsPostgresRepository implements FilmsRepository {
     scheduleId: string;
     seat: string;
   }) {
-    const schedule = await this.postgresSchedule.findOne({
+    const schedule = await this.schedulesTable.findOne({
       where: {
         id: data.scheduleId,
       },
     });
     schedule.taken =
       schedule.taken !== '' ? schedule.taken.concat(',', data.seat) : data.seat;
-    await this.postgresSchedule.save(schedule);
+    await this.schedulesTable.save(schedule);
   }
 
   async startTransaction() {
