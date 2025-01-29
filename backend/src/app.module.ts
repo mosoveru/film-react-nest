@@ -4,9 +4,11 @@ import { FilmsController } from './films/films.controller';
 import { OrderController } from './order/order.controller';
 import { FilmsService } from './films/films.service';
 import { OrderService } from './order/order.service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { RepositoryModule } from './repository/repository.module';
 import configuration from './config/configuration';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Films } from './films/schemas/films.entity';
+import { Schedules } from './films/schemas/schedule.entity';
 
 @Module({
   imports: [
@@ -15,10 +17,17 @@ import configuration from './config/configuration';
       cache: true,
       load: [configuration],
     }),
-    MongooseModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        uri: configService.get('database.url'),
+        type: configService.get<any>('database.driver'),
+        host: configService.get<string>('database.host'),
+        port: configService.get<number>('database.port'),
+        username: configService.get<string>('database.username'),
+        password: configService.get<string>('database.password'),
+        database: configService.get<string>('database.name'),
+        entities: [Films, Schedules],
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),
