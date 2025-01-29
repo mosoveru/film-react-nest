@@ -19,19 +19,16 @@ import { Schedules } from './films/schemas/schedule.entity';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => {
-        const url = new URL(configService.get<string>('database.url'));
-        return {
-          type: 'postgres',
-          host: url.hostname,
-          port: Number(url.port),
-          username: configService.get<string>('database.user'),
-          password: configService.get<string>('database.password'),
-          database: url.pathname.slice(1),
-          entities: [Films, Schedules],
-          synchronize: false,
-        };
-      },
+      useFactory: (configService: ConfigService) => ({
+        type: configService.get<any>('database.driver'),
+        host: configService.get<string>('database.host'),
+        port: configService.get<number>('database.port'),
+        username: configService.get<string>('database.username'),
+        password: configService.get<string>('database.password'),
+        database: configService.get<string>('database.name'),
+        entities: [Films, Schedules],
+        synchronize: false,
+      }),
       inject: [ConfigService],
     }),
     RepositoryModule,
