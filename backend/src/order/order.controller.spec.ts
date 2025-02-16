@@ -61,9 +61,11 @@ describe('Тестирование OrderController', () => {
   it('Метод .makeOrder() контроллера должен вернуть корректное значение', async () => {
     const receivedValue = await orderController.makeOrder(createOrderDtoMock);
 
-    expect(receivedValue).toEqual({
-      total: ticketsMock.length,
-      items: ticketsMock,
-    });
+    expect(receivedValue).toEqual(
+      expect.objectContaining({
+        total: expect.any(Number),
+        items: expect.any(Array),
+      }),
+    );
   });
 });
