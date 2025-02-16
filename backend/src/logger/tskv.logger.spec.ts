@@ -13,9 +13,9 @@ describe('Тестирование TSKVLogger', () => {
     WARN = 'warn',
   }
 
-  const returnBlankStrWithParams = (level: string) =>
+  const returnExpectedStringWithParams = (level: LEVELS) =>
     `level=${level}\tmessage=${MESSAGE}\toptionalParam-1=${ADDITIONAL_PARAM}\toptionalParam-2=${ANOTHER_ADDITIONAL_PARAM}\n`;
-  const returnBlankStrWithoutParams = (level: string) =>
+  const returnExpectedStringWithoutParams = (level: string) =>
     `level=${level}\tmessage=${MESSAGE}\n`;
 
   beforeEach(() => {
@@ -36,10 +36,10 @@ describe('Тестирование TSKVLogger', () => {
     const receivedStrWithoutParams = logger.formatMessage(LEVELS.INFO, MESSAGE);
 
     expect(receivedStrWithParams).toEqual(
-      returnBlankStrWithParams(LEVELS.INFO),
+      returnExpectedStringWithParams(LEVELS.INFO),
     );
     expect(receivedStrWithoutParams).toEqual(
-      returnBlankStrWithoutParams(LEVELS.INFO),
+      returnExpectedStringWithoutParams(LEVELS.INFO),
     );
   });
 
@@ -48,11 +48,15 @@ describe('Тестирование TSKVLogger', () => {
 
     logger.log(MESSAGE, ADDITIONAL_PARAM, ANOTHER_ADDITIONAL_PARAM);
 
-    expect(spy).toHaveBeenCalledWith(returnBlankStrWithParams(LEVELS.LOG));
+    expect(spy).toHaveBeenCalledWith(
+      returnExpectedStringWithParams(LEVELS.LOG),
+    );
 
     logger.log(MESSAGE);
 
-    expect(spy).toHaveBeenCalledWith(returnBlankStrWithoutParams(LEVELS.LOG));
+    expect(spy).toHaveBeenCalledWith(
+      returnExpectedStringWithoutParams(LEVELS.LOG),
+    );
   });
 
   it('Проверка работы метода warn', () => {
@@ -60,11 +64,15 @@ describe('Тестирование TSKVLogger', () => {
 
     logger.warn(MESSAGE, ADDITIONAL_PARAM, ANOTHER_ADDITIONAL_PARAM);
 
-    expect(spy).toHaveBeenCalledWith(returnBlankStrWithParams(LEVELS.WARN));
+    expect(spy).toHaveBeenCalledWith(
+      returnExpectedStringWithParams(LEVELS.WARN),
+    );
 
     logger.warn(MESSAGE);
 
-    expect(spy).toHaveBeenCalledWith(returnBlankStrWithoutParams(LEVELS.WARN));
+    expect(spy).toHaveBeenCalledWith(
+      returnExpectedStringWithoutParams(LEVELS.WARN),
+    );
   });
 
   it('Проверка работы метода error', () => {
@@ -72,10 +80,14 @@ describe('Тестирование TSKVLogger', () => {
 
     logger.error(MESSAGE, ADDITIONAL_PARAM, ANOTHER_ADDITIONAL_PARAM);
 
-    expect(spy).toHaveBeenCalledWith(returnBlankStrWithParams(LEVELS.ERROR));
+    expect(spy).toHaveBeenCalledWith(
+      returnExpectedStringWithParams(LEVELS.ERROR),
+    );
 
     logger.error(MESSAGE);
 
-    expect(spy).toHaveBeenCalledWith(returnBlankStrWithoutParams(LEVELS.ERROR));
+    expect(spy).toHaveBeenCalledWith(
+      returnExpectedStringWithoutParams(LEVELS.ERROR),
+    );
   });
 });
