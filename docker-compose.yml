@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: nestjs_app
+    env_file:
+      - ./.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - backend-network
+      - internet
+    restart: unless-stopped
+  postgres:
+    image: postgres
+    container_name: postgres
+    env_file:
+      - ./.env
+    volumes:
+      - "C:\\pg_data:/var/lib/postgresql/data/pgdata"
+    networks:
+     - backend-network
+    restart: unless-stopped
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    env_file:
+      - ./.env
+    ports:
+      - "8080:80"
+    networks:
+      - backend-network
+      - internet
+    depends_on:
+      - postgres
+    restart: unless-stopped
+networks:
+  backend-network:
+    driver: bridge
+    internal: true
+  internet:
+    driver: bridge
