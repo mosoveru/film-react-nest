@@ -17,3 +17,7 @@ build/
 .idea/
 .vscode
 .DS_Store
+
+# .env files
+.env
+.env.example
