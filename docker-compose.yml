@@ -1,5 +1,6 @@
 services:
   backend:
+    image: ghcr.io/mosoveru/film-react-nest-backend:latest
     build:
       context: ./backend
     container_name: nestjs_app
@@ -12,6 +13,7 @@ services:
       - internet
     restart: unless-stopped
   frontend:
+    image: ghcr.io/mosoveru/film-react-nest-frontend:latest
     build:
       context: ./frontend
     container_name: frontend
@@ -20,6 +22,7 @@ services:
     volumes:
       - frontend_build:/app
   nginx:
+    image: ghcr.io/mosoveru/film-react-nest-nginx:latest
     build:
       context: ./nginx
     container_name: nginx
@@ -38,7 +41,7 @@ services:
     env_file:
       - ./.env
     volumes:
-      - "C:\\pg_data:/var/lib/postgresql/data/pgdata"
+      - postgres_data:/var/lib/postgresql/data/pgdata
     networks:
      - backend-network
     restart: unless-stopped
@@ -49,6 +52,8 @@ services:
       - ./.env
     ports:
       - "8080:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
     networks:
       - backend-network
       - internet
@@ -63,3 +68,5 @@ networks:
     driver: bridge
 volumes:
   frontend_build:
+  postgres_data:
+  pgadmin:
