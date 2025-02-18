@@ -5,12 +5,31 @@ services:
     container_name: nestjs_app
     env_file:
       - ./.env
-    ports:
-      - "3000:3000"
     depends_on:
       - postgres
     networks:
       - backend-network
+      - internet
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    env_file:
+      - ./.env
+    volumes:
+      - frontend_build:/app
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - frontend_build:/var/www/frontend:ro;
+    depends_on:
+      - frontend
+    networks:
       - internet
     restart: unless-stopped
   postgres:
@@ -42,3 +61,5 @@ networks:
     internal: true
   internet:
     driver: bridge
+volumes:
+  frontend_build:

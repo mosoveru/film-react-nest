@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 import { TskvLogger } from './logger/tskv.logger';
 import { JsonLogger } from './logger/json.logger';
 import { DevLogger } from './logger/dev.logger';
@@ -12,7 +11,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.setGlobalPrefix('api/afisha');
-  app.useStaticAssets(join(__dirname, '..', 'public'));
+  app.useStaticAssets('public');
   app.enableCors();
 
   switch (process.env.LOGGER) {

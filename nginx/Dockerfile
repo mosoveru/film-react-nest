@@ -1,7 +1,5 @@
 FROM nginx
 
-COPY frontend-nginx.conf /etc/nginx/sites-available/mosoveru.students.nomoreparties.co
-COPY backend-nginx.conf /etc/nginx/sites-available/api.mosoveru.students.nomoreparties.co
+COPY nest.nginx.conf /etc/nginx/conf.d
 
-RUN ls -s /etc/nginx/sites-available/mosoveru.students.nomoreparties.co /etc/nginx/sites-enabled/
-RUN ls -s /etc/nginx/sites-available/api.mosoveru.students.nomoreparties.co /etc/nginx/sites-enabled/
+RUN rm /etc/nginx/conf.d/default.conf
