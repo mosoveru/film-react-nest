@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN yarn
+RUN npm ci
 
 COPY nest-cli.json tsconfig*.json ./
 
@@ -12,7 +12,7 @@ COPY public ./public
 
 COPY src ./src
 
-RUN yarn run build
+RUN npm run build
 
 FROM node:alpine AS production
 
@@ -20,7 +20,7 @@ WORKDIR /app
 
 COPY --from=builder /app/package*.json ./
 
-RUN yarn --prod
+RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./
 
