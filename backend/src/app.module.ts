@@ -19,16 +19,33 @@ import { Schedules } from './films/schemas/schedule.entity';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: configService.get<any>('database.driver'),
-        host: configService.get<string>('database.host'),
-        port: configService.get<number>('database.port'),
-        username: configService.get<string>('database.username'),
-        password: configService.get<string>('database.password'),
-        database: configService.get<string>('database.name'),
-        entities: [Films, Schedules],
-        synchronize: false,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const urlStr = configService.get<string>('database.host');
+        if (URL.canParse(urlStr)) {
+          const url = new URL(urlStr);
+          return {
+            type: url.protocol.slice(0, -1),
+            host: url.hostname,
+            port: Number(url.port),
+            username: configService.get<string>('database.username'),
+            password: configService.get<string>('database.password'),
+            database: url.pathname.slice(1),
+            entities: [Films, Schedules],
+            synchronize: false,
+          };
+        } else {
+          return {
+            type: configService.get<any>('database.driver'),
+            host: configService.get<string>('database.host'),
+            port: configService.get<number>('database.port'),
+            username: configService.get<string>('database.username'),
+            password: configService.get<string>('database.password'),
+            database: configService.get<string>('database.name'),
+            entities: [Films, Schedules],
+            synchronize: false,
+          };
+        }
+      },
       inject: [ConfigService],
     }),
     RepositoryModule,
