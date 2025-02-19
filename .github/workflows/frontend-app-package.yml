@@ -75,8 +75,8 @@ jobs:
         with:
           context: ./frontend
           build-args: | 
-            VITE_API_URL=http://api.mosoveru.nomorepartiesco.ru/api/afisha
-            VITE_CDN_URL=http://api.mosoveru.nomorepartiesco.ru/content/afisha
+            VITE_API_URL=https://api.mosoveru.nomorepartiesco.ru/api/afisha
+            VITE_CDN_URL=https://api.mosoveru.nomorepartiesco.ru/content/afisha
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
