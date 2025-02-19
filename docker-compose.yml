@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ghcr.io/mosoveru/film-react-nest-backend:latest
+    image: ghcr.io/mosoveru/films-nest-backend:latest
     build:
       context: ./backend
     container_name: nestjs_app
@@ -13,7 +13,7 @@ services:
       - internet
     restart: unless-stopped
   frontend:
-    image: ghcr.io/mosoveru/film-react-nest-frontend:latest
+    image: ghcr.io/mosoveru/films-nest-frontend:latest
     build:
       context: ./frontend
     container_name: frontend
@@ -22,7 +22,7 @@ services:
     volumes:
       - frontend_build:/app
   nginx:
-    image: ghcr.io/mosoveru/film-react-nest-nginx:latest
+    image: ghcr.io/mosoveru/films-nest-nginx:latest
     build:
       context: ./nginx
     container_name: nginx
