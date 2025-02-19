@@ -38,6 +38,13 @@ services:
     networks:
       - internet
     restart: unless-stopped
+  certbot:
+    image: certbot/certbot:latest
+    networks:
+      - internet
+    volumes:
+      - certbot_www:/var/www/certbot/:rw
+      - certbot_conf:/etc/letsencrypt/:rw
   postgres:
     image: postgres
     container_name: postgres
