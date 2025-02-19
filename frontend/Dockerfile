@@ -1,5 +1,8 @@
 FROM node:alpine AS builder
 
+ARG VITE_API_URL
+ARG VITE_CDN_URL
+
 WORKDIR /app
 
 COPY package*.json ./
@@ -14,7 +17,7 @@ COPY public ./public
 
 COPY src ./src
 
-RUN npm run build
+RUN VITE_API_URL=${VITE_API_URL} VITE_CDN_URL=${VITE_CDN_URL} npm run build
 
 FROM node:alpine AS production
 

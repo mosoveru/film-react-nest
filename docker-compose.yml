@@ -16,6 +16,9 @@ services:
     image: ghcr.io/mosoveru/films-nest-frontend:latest
     build:
       context: ./frontend
+      args:
+        VITE_API_URL: "http://api.mosoveru.nomorepartiesco.ru/api/afisha"
+        VITE_CDN_URL: "http://api.mosoveru.nomorepartiesco.ru/content/afisha"
     container_name: frontend
     env_file:
       - ./.env
