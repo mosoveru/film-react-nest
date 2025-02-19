@@ -1,4 +1,4 @@
-name: Docker Images Publishing
+name: Nginx with SSL configuration package publishing
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -23,16 +23,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - context: ./frontend
-            image: films-nest-frontend
-          - context: ./backend
-            image: films-nest-backend
-          - context: ./nginx
-            image: films-nest-nginx
     permissions:
       contents: read
       packages: write
@@ -74,16 +64,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/films-nest-nginx
           flavor: latest=true
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Backend Image
+      - name: Build and push Nginx with SSL configuration Image
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          context: ${{ matrix.context }}
+          context: ./nginx
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
