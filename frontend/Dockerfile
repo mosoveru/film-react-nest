@@ -6,7 +6,13 @@ COPY package*.json ./
 
 RUN yarn
 
-COPY . .
+COPY vite.config.ts tsconfig*.json index.html ./
+
+COPY bin ./bin
+
+COPY public ./public
+
+COPY src ./src
 
 RUN yarn run build
 

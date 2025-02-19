@@ -6,7 +6,11 @@ COPY package*.json ./
 
 RUN yarn
 
-COPY . .
+COPY nest-cli.json tsconfig*.json ./
+
+COPY public ./public
+
+COPY src ./src
 
 RUN yarn run build
 
