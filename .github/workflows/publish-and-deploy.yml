@@ -1,4 +1,4 @@
-name: Publishing Docker Images to the GitHub Container Registry
+name: Publish Images and Deploy the Web Application
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -136,7 +136,7 @@ jobs:
         id: build-and-push-nginx
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          context: ./backend
+          context: ./nginx
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.nginx_meta.outputs.tags }}
           labels: ${{ steps.nginx_meta.outputs.labels }}
@@ -164,7 +164,7 @@ jobs:
         id: build-and-push-no-ssl-nginx
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          context: ./backend
+          context: ./nginx
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.no_ssl_nginx_meta.outputs.tags }}
           labels: ${{ steps.no_ssl_nginx_meta.outputs.labels }}
@@ -180,3 +180,28 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+  deploy:
+    needs: publish_docker_images
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Copy docker-compose.yml to the server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+       host: ${{ secrets.HOST }}
+       username: ${{ secrets.SSH_USER }}
+       key: ${{ secrets.SSH_PRIVATE_KEY }}
+       source: "docker-compose.yml"
+       target: ~/nestjs
+    - name: Connect with SSH and Deploy the Application
+      uses: appleboy/ssh-action@v1.2.1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd nestjs
+          sudo docker compose down
+          sudo docker volume rm nestjs_frontend_build
+          sudo docker compose pull
+          sudo docker compose up -d
