@@ -1,0 +1,207 @@
+name: Publish Images and Deploy the Web Application
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  schedule:
+    - cron: '24 1 * * *'
+  push:
+    branches: [ "**" ]
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+
+jobs:
+  publish_docker_images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install the cosign tool except on PR
+      # https://github.com/sigstore/cosign-installer
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 #v3.5.0
+        with:
+          cosign-release: 'v2.2.4'
+
+      # Set up BuildKit Docker container builder to be able to build
+      # multi-platform images and export cache
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker Frontend metadata
+        id: frontend_meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/films-nest-frontend
+          flavor: latest=true
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Frontend Docker Image
+        id: build-and-push-frontend
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        with:
+          context: ./frontend
+          build-args: |
+            VITE_API_URL=https://api.mosoveru.nomorepartiesco.ru/api/afisha
+            VITE_CDN_URL=https://api.mosoveru.nomorepartiesco.ru/content/afisha
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.frontend_meta.outputs.tags }}
+          labels: ${{ steps.frontend_meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Sign the resulting Docker image digest except on PRs.
+      # This will only write to the public Rekor transparency log when the Docker
+      # repository is public to avoid leaking data.  If you would like to publish
+      # transparency data even for private images, pass --force to cosign below.
+      # https://github.com/sigstore/cosign
+      - name: Sign the published Frontend Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+          TAGS: ${{ steps.frontend_meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push-frontend.outputs.digest }}
+        # This step uses the identity token to provision an ephemeral certificate
+        # against the sigstore community Fulcio instance.
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Extract Docker Backend metadata
+        id: backend_meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/films-nest-backend
+          flavor: latest=true
+
+      - name: Build and push Backend Docker Image
+        id: build-and-push-backend
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        with:
+           context: ./backend
+           push: ${{ github.event_name != 'pull_request' }}
+           tags: ${{ steps.backend_meta.outputs.tags }}
+           labels: ${{ steps.backend_meta.outputs.labels }}
+           cache-from: type=gha
+           cache-to: type=gha,mode=max
+
+      - name: Sign the published Backend Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+         # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+         TAGS: ${{ steps.backend_meta.outputs.tags }}
+         DIGEST: ${{ steps.build-and-push-backend.outputs.digest }}
+       # This step uses the identity token to provision an ephemeral certificate
+       # against the sigstore community Fulcio instance.
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Extract Docker Nginx metadata
+        id: nginx_meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/films-nest-nginx
+          flavor: latest=true
+
+      - name: Build and push Nginx Docker Image
+        id: build-and-push-nginx
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        with:
+          context: ./nginx
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.nginx_meta.outputs.tags }}
+          labels: ${{ steps.nginx_meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign the published Nginx Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+          TAGS: ${{ steps.nginx_meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push-nginx.outputs.digest }}
+        # This step uses the identity token to provision an ephemeral certificate
+        # against the sigstore community Fulcio instance.
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Extract Docker No-SSL Nginx metadata
+        id: no_ssl_nginx_meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/films-nest-nginx-no-ssl
+          flavor: latest=true
+
+      - name: Build and push No-SSL Nginx Docker Image
+        id: build-and-push-no-ssl-nginx
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        with:
+          context: ./nginx
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.no_ssl_nginx_meta.outputs.tags }}
+          labels: ${{ steps.no_ssl_nginx_meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign the published No-SSL Nginx Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+          TAGS: ${{ steps.no_ssl_nginx_meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push-no-ssl-nginx.outputs.digest }}
+        # This step uses the identity token to provision an ephemeral certificate
+        # against the sigstore community Fulcio instance.
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+  deploy:
+    needs: publish_docker_images
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Copy docker-compose.yml to the server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+       host: ${{ secrets.HOST }}
+       username: ${{ secrets.SSH_USER }}
+       key: ${{ secrets.SSH_PRIVATE_KEY }}
+       source: "docker-compose.yml"
+       target: ~/nestjs
+    - name: Connect with SSH and Deploy the Application
+      uses: appleboy/ssh-action@v1.2.1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd nestjs
+          sudo docker compose down
+          sudo docker volume rm nestjs_frontend_build
+          sudo docker compose pull
+          sudo docker compose up -d

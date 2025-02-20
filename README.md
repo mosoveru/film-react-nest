@@ -1,5 +1,9 @@
 # FILM!
 
+Ссылка на приложение:
+
+https://mosoveru.nomorepartiesco.ru
+
 ## Установка
 
 ### MongoDB

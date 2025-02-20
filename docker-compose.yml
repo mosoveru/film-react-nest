@@ -1,0 +1,87 @@
+services:
+  backend:
+    image: ghcr.io/mosoveru/films-nest-backend:latest
+    build:
+      context: ./backend
+    container_name: nestjs_app
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+    networks:
+      - backend-network
+      - internet
+    restart: unless-stopped
+  frontend:
+    image: ghcr.io/mosoveru/films-nest-frontend:latest
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: "http://api.mosoveru.nomorepartiesco.ru/api/afisha"
+        VITE_CDN_URL: "http://api.mosoveru.nomorepartiesco.ru/content/afisha"
+    container_name: frontend
+    env_file:
+      - ./.env
+    volumes:
+      - frontend_build:/app
+  nginx:
+    image: ghcr.io/mosoveru/films-nest-nginx:latest
+    build:
+      context: ./nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - frontend_build:/var/www/frontend:ro;
+      - certbot_www:/var/www/certbot/:ro
+      - certbot_conf:/etc/letsencrypt/:ro
+    depends_on:
+      - frontend
+    networks:
+      - internet
+    restart: unless-stopped
+  certbot:
+    image: certbot/certbot:latest
+    networks:
+      - internet
+    volumes:
+      - certbot_www:/var/www/certbot/:rw
+      - certbot_conf:/etc/letsencrypt/:rw
+  postgres:
+    image: postgres
+    container_name: postgres
+    env_file:
+      - ./.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    networks:
+     - backend-network
+    restart: unless-stopped
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    env_file:
+      - ./.env
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      - backend-network
+      - internet
+    depends_on:
+      - postgres
+    restart: unless-stopped
+networks:
+  backend-network:
+    driver: bridge
+    internal: true
+  internet:
+    driver: bridge
+volumes:
+  frontend_build:
+  postgres_data:
+  pgadmin:
+  certbot_www:
+  certbot_conf:
