@@ -6,8 +6,6 @@ name: Publish Images and Deploy the Web Application
 # documentation.
 
 on:
-  schedule:
-    - cron: '24 1 * * *'
   push:
     branches: [ "**" ]
     # Publish semver tags as releases.
